@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=medcol_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - medcol_net
+
+  backend:
+    build: ./backend
+    container_name: nest-backend
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=medcol_db
+      - PORT=4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+    networks:
+      - medcol_net
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: "http://48.214.3.172:4000"
+    container_name: next-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://48.214.3.172:4000
+    ports:
+      - "80:3000"
+    depends_on:
+      - backend
+    networks:
+      - medcol_net
+
+volumes:
+  pgdata:
+
+networks:
+  medcol_net:
+    external: true
+
