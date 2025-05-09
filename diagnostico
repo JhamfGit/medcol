@@ -1,0 +1,21 @@
+#!/bin/bash
+# Verificar los logs de nginx-proxy
+echo "=== Logs de nginx-proxy ==="
+docker logs nginx-proxy 2>&1 | grep -i "ssl" | tail -20
+
+# Verificar que nginx pueda acceder a los certificados
+echo -e "\n=== Verificar acceso a los certificados ==="
+docker exec nginx-proxy ls -la /etc/nginx/certs/
+docker exec nginx-proxy ls -la /etc/nginx/ssl/ 2>/dev/null || echo "El directorio /etc/nginx/ssl/ no existe"
+
+# Comprobar la configuración de nginx
+echo -e "\n=== Verificar configuración de nginx ==="
+docker exec nginx-proxy nginx -t
+
+# Comprobar la resolución DNS
+echo -e "\n=== Verificar resolución DNS ==="
+host docs.saludmedcol.com || echo "No se pudo resolver el dominio"
+
+# Prueba de conexión SSL
+echo -e "\n=== Probar conexión SSL ==="
+echo | openssl s_client -connect docs.saludmedcol.com:443 -servername docs.saludmedcol.com 2>/dev/null | grep "Verification"

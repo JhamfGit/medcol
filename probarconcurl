@@ -1,0 +1,12 @@
+#!/bin/bash
+# Probar con curl ignorando la verificación SSL
+echo "=== Probar con curl (ignorando verificación SSL) ==="
+curl -k -I https://docs.saludmedcol.com
+
+# Probar con curl completo para ver la respuesta
+echo -e "\n=== Respuesta completa de curl ==="
+curl -k -v https://docs.saludmedcol.com 2>&1 | grep -E "HTTP|TLS|SSL|cipher|error"
+
+# Probar directamente contra la IP
+echo -e "\n=== Probar directamente contra la IP ==="
+curl -k -H "Host: docs.saludmedcol.com" -I https://48.214.3.172

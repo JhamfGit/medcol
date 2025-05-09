@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Variables
+DOMINIO="docs.saludmedcol.com"
+CARPETA_CERTS="/home/adminmedcol/medcol_app/ssl"
+ARCHIVO_CNF="/tmp/san.cnf"
+
+# Crear carpeta si no existe
+sudo mkdir -p "$CARPETA_CERTS"
+
+# Crear archivo san.cnf
+cat <<EOF | sudo tee "$ARCHIVO_CNF" > /dev/null
+[req]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+x509_extensions    = v3_ca
+prompt             = no
+
+[req_distinguished_name]
+CN = $DOMINIO
+
+[req_ext]
+subjectAltName = @alt_names
+
+[v3_ca]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = $DOMINIO
+EOF
+
+# Generar el certificado
+sudo openssl req -x509 -nodes -days 365 \
+ -newkey rsa:2048 \
+ -keyout "$CARPETA_CERTS/$DOMINIO.key" \
+ -out "$CARPETA_CERTS/$DOMINIO.crt" \
+ -config "$ARCHIVO_CNF"
+
+# Confirmar
+echo "✅ Certificado y llave generados en: $CARPETA_CERTS"

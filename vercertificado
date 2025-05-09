@@ -1,0 +1,12 @@
+#!/bin/bash
+# Verificar el nombre del certificado
+echo "=== Verificar nombre del certificado ==="
+docker exec nginx-proxy openssl x509 -in /etc/nginx/certs/docs.saludmedcol.com.crt -noout -subject
+
+# Verificar nombres alternativos del certificado
+echo -e "\n=== Verificar nombres alternativos ==="
+docker exec nginx-proxy openssl x509 -in /etc/nginx/certs/docs.saludmedcol.com.crt -noout -text | grep -A1 "Subject Alternative Name"
+
+# Verificar fechas de validez
+echo -e "\n=== Verificar fechas de validez ==="
+docker exec nginx-proxy openssl x509 -in /etc/nginx/certs/docs.saludmedcol.com.crt -noout -dates

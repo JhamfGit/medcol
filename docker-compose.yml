@@ -1,18 +1,57 @@
-version: "3.8"
-
 services:
-  postgres:
-    image: postgres:16
-    container_name: postgres
-    environment:
-      - POSTGRES_DB=medcol_db
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /home/adminmedcol/medcol_app/ssl:/etc/nginx/ssl:ro
+      - /home/adminmedcol/medcol_app/certs:/etc/nginx/certs:ro
+      - nginx_vhost:/etc/nginx/vhost.d:rw
+      - nginx_html:/usr/share/nginx/html:rw
+      - nginx_conf:/etc/nginx/conf.d:rw
+      - ./nginx-custom:/etc/nginx/custom.d:ro
+    environment:
+      - DEFAULT_HOST=docs.saludmedcol.com
     networks:
       - medcol_net
+#  nginx-letsencrypt:
+#    image: jrcs/letsencrypt-nginx-proxy-companion
+#    container_name: nginx-proxy-le
+#    restart: always
+#    depends_on:
+#      - nginx-proxy
+#    environment:
+#      - NGINX_PROXY_CONTAINER=nginx-proxy
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#      - nginx_certs:/etc/nginx/certs:rw
+#      - nginx_vhost:/etc/nginx/vhost.d:rw
+#      - nginx_html:/usr/share/nginx/html:rw
+#      - acme_data:/etc/acme.sh:rw
+#    networks:
+#      - medcol_net
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_API_URL=https://docs.saludmedcol.com/api
+    container_name: next-frontend
+    environment:
+      - VIRTUAL_HOST=docs.saludmedcol.com
+      - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=docs.saludmedcol.com
+      - LETSENCRYPT_EMAIL=admin@saludmedcol.com
+    expose:
+      - "3000"
+    depends_on:
+      - backend
+    networks:
+      - medcol_net
   backend:
     build: ./backend
     container_name: nest-backend
@@ -23,32 +62,39 @@ services:
       - DB_PASSWORD=password
       - DB_NAME=medcol_db
       - PORT=4000
-    ports:
-      - "4000:4000"
+      - VIRTUAL_HOST=docs.saludmedcol.com
+      - VIRTUAL_PORT=4000
+    expose:
+      - "4000"
     depends_on:
       - postgres
     networks:
       - medcol_net
-
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        NEXT_PUBLIC_API_URL: "http://48.214.3.172:4000"
-    container_name: next-frontend
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: always
     environment:
-      - NEXT_PUBLIC_API_URL=http://48.214.3.172:4000
-    ports:
-      - "80:3000"
-    depends_on:
-      - backend
+      - POSTGRES_DB=medcol_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     networks:
       - medcol_net
-
 volumes:
   pgdata:
-
+    driver: local
+  nginx_certs:
+    driver: local
+  nginx_vhost:
+    driver: local
+  nginx_html:
+    driver: local
+  nginx_conf:
+    driver: local
+  acme_data:
+    driver: local
 networks:
   medcol_net:
-    external: true
-
+    driver: bridge

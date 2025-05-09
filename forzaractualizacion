@@ -1,0 +1,28 @@
+#!/bin/bash
+# Detener el contenedor
+docker stop nginx-proxy
+
+# Modificar directamente el archivo de configuración
+echo "Actualizando rutas en default.conf..."
+docker cp nginx-proxy:/etc/nginx/conf.d/default.conf /tmp/default.conf
+sudo sed -i 's|/etc/nginx/ssl/docs.saludmedcol.com.crt|/etc/nginx/certs/docs.saludmedcol.com.crt|g' /tmp/default.conf
+sudo sed -i 's|/etc/nginx/ssl/docs.saludmedcol.com.key|/etc/nginx/certs/docs.saludmedcol.com.key|g' /tmp/default.conf
+docker cp /tmp/default.conf nginx-proxy:/etc/nginx/conf.d/default.conf
+rm /tmp/default.conf
+
+# Alternativa: crear un enlace simbólico dentro del contenedor
+echo "Creando enlace simbólico como respaldo..."
+docker start nginx-proxy
+docker exec nginx-proxy bash -c "mkdir -p /etc/nginx/ssl && ln -sf /etc/nginx/certs/docs.saludmedcol.com.crt /etc/nginx/ssl/docs.saludmedcol.com.crt && ln -sf /etc/nginx/certs/docs.saludmedcol.com.key /etc/nginx/ssl/docs.saludmedcol.com.key"
+
+# Reiniciar nginx dentro del contenedor
+echo "Reiniciando nginx..."
+docker exec nginx-proxy nginx -s reload
+
+# Verificar que los cambios se hayan aplicado
+echo -e "\n=== Verificar configuración actualizada ==="
+docker exec nginx-proxy grep -r "ssl_certificate" /etc/nginx/conf.d/
+
+# Probar la conexión SSL
+echo -e "\n=== Probar conexión SSL después de los cambios ==="
+echo | openssl s_client -connect docs.saludmedcol.com:443 -servername docs.saludmedcol.com 2>/dev/null | grep "Verification"
