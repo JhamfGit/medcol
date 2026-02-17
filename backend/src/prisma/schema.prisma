@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario         Int             @id @default(autoincrement())
+  usuario            String?         @db.VarChar(100)
+  pass               String?         @db.VarChar(100)
+  fecha_creacion     DateTime?       @default(now()) @db.Timestamp(6)
+  fecha_modificacion DateTime?       @default(now()) @db.Timestamp(6)
+  email              String?         @db.VarChar(50)
+  nombre             String?         @db.VarChar(100)
+  rol                String?         @db.VarChar(100)
+  tb_documentos      tb_documentos[]
+  tb_entregas        tb_entregas[]
+  tb_pacientes       tb_pacientes[]
+
+  @@map("tb_usuarios")
+}
+
+model tb_documentos {
+  id_documento       Int           @id @default(autoincrement())
+  id_paciente        Int?
+  documento_tipo     String?       @db.VarChar(1000)
+  fecha_registro     DateTime?     @db.Timestamp(6)
+  es_pendiente       Boolean?
+  fecha_creacion     DateTime?     @default(now()) @db.Timestamp(6)
+  fecha_modificacion DateTime?     @default(now()) @db.Timestamp(6)
+  id_usuario         Int?
+  url                String?       @db.VarChar(255)
+  tb_pacientes       tb_pacientes? @relation(fields: [id_paciente], references: [id_paciente], onDelete: NoAction, onUpdate: NoAction)
+  tb_usuarios        Usuario?      @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model tb_entregas {
+  id_entrega         Int           @id @default(autoincrement())
+  id_paciente        Int?
+  fecha_entrega      DateTime?     @db.Timestamp(6)
+  observaciones      String?       @db.VarChar(1000)
+  estado             String?       @db.Char(1)
+  fecha_creacion     DateTime?     @default(now()) @db.Timestamp(6)
+  fecha_modificacion DateTime?     @default(now()) @db.Timestamp(6)
+  id_usuario         Int?
+  tipo_entrega       String?       @db.VarChar(50)
+  tb_pacientes       tb_pacientes? @relation(fields: [id_paciente], references: [id_paciente], onDelete: NoAction, onUpdate: NoAction)
+  tb_usuarios        Usuario?      @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model tb_pacientes {
+  id_paciente        Int                @id @default(autoincrement())
+  msd                Int?               @unique
+  nombre             String?            @db.VarChar(255)
+  id_tipo_documento  Int?
+  no_documento       String?            @db.VarChar(20)
+  fecha_creacion     DateTime?          @default(now()) @db.Timestamp(6)
+  fecha_modificacion DateTime?          @default(now()) @db.Timestamp(6)
+  id_usuario         Int?
+  ciudad             String?            @db.VarChar(100)
+  regimen            String?            @db.VarChar(50)
+  medico             String?            @db.VarChar(255)
+  drogueria          String?            @db.VarChar(255)
+  tb_documentos      tb_documentos[]
+  tb_entregas        tb_entregas[]
+  tb_tipo_documento  tb_tipo_documento? @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: NoAction, onUpdate: NoAction)
+  tb_usuarios        Usuario?           @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model tb_tipo_documento {
+  id_tipo_documento Int            @id @default(autoincrement())
+  descripcion       String?        @db.VarChar(255)
+  tb_pacientes      tb_pacientes[]
+}

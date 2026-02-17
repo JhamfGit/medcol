@@ -1,0 +1,13 @@
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=Jhamf123Mic
+DB_NAME=medcol_db
+PORT=4000
+
+#DATABASE_URL=postgresql://postgres@postgres:5432/medcol_db
+DATABASE_URL=postgresql://postgres@localhost:5432/medcol_db
+
+
+
+

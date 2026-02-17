@@ -1,0 +1,6 @@
+
+> back_medcol@0.0.1 dev
+> nest start --watch
+
+[2J[3J[H[[90m1:38:45 p.┬ám.[0m] Starting compilation in watch mode...
+
