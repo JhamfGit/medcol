@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { IntegracionRfastModule } from './integration_rfast/integration_rfast.module';
@@ -28,15 +28,18 @@ import { EntregasModule } from './entregas/entregas.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     // DESPUÉS - leyendo desde .env ✅
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5433,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'medcol_db',
-      autoLoadEntities: true,
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_HOST', 'localhost'),
+        port: config.get<number>('DB_PORT', 5432),
+        username: config.get<string>('DB_USER', 'postgres'),
+        password: config.get<string>('DB_PASSWORD', 'postgres'),
+        database: config.get<string>('DB_NAME', 'medcol_db'),
+        autoLoadEntities: true,
+        synchronize: false,
+      }),
     }),
     AzureStorageModule,
     IntegracionRfastModule,
