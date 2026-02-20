@@ -31,4 +31,4 @@ jobs:
           push: true
           tags: jhamfgit/medcol-frontend:latest
           build-args: |
-            NEXT_PUBLIC_API_URL=https://medcoldocs.jhamf.com/api
+            NEXT_PUBLIC_API_URL=https://docs.saludmedcol.com/api
