@@ -38,7 +38,7 @@ services:
       - vnetdocs
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.medcol-backend.rule=Host(`medcoldocs.jhamf.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.medcol-backend.rule=Host(`docs.saludmedcol.com`) && PathPrefix(`/api`)"
       - "traefik.http.routers.medcol-backend.entrypoints=websecure"
       - "traefik.http.routers.medcol-backend.tls.certresolver=myresolver"
       - "traefik.http.services.medcol-backend.loadbalancer.server.port=4000"
@@ -54,7 +54,7 @@ services:
       - vnetdocs
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.medcol-frontend.rule=Host(`medcoldocs.jhamf.com`)"
+      - "traefik.http.routers.medcol-frontend.rule=Host(`docs.saludmedcol.com`)"
       - "traefik.http.routers.medcol-frontend.entrypoints=websecure"
       - "traefik.http.routers.medcol-frontend.tls.certresolver=myresolver"
       - "traefik.http.services.medcol-frontend.loadbalancer.server.port=3000"
